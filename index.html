@@ -29,6 +29,10 @@ header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.94);backdr
 .nav-links a:hover{color:var(--blue2)}
 .nav-cta{background:var(--blue);color:#fff;border-radius:12px;padding:13px 18px;font-size:13px;font-weight:800;box-shadow:0 10px 24px rgba(17,27,155,.18)}
 .menu{display:none;background:none;border:0;font-size:24px;color:var(--navy)}
+.mobile-menu-panel{display:none}
+.mobile-menu-panel a{display:block}
+.menu-icon{display:block;line-height:1}
+
 
 .hero{background:linear-gradient(135deg,#fff 0%,#f7f9ff 72%,#eef2ff 100%);padding:72px 0 58px;position:relative}
 .hero-grid{display:grid;grid-template-columns:minmax(0,.96fr) minmax(0,1.04fr);align-items:center;gap:44px}
@@ -164,8 +168,22 @@ footer{background:#080e27;color:#aab4ce;padding:30px 0}
   .steps{grid-template-columns:repeat(3,1fr)}
 }
 @media(max-width:800px){
-  .nav-links{display:none}.menu{display:block}
-  .nav{height:68px}.brand img{width:72px}.nav-cta{padding:11px 13px}
+  .nav-links{display:none}.menu{display:block;cursor:pointer;position:relative;z-index:120}
+  .nav{height:68px;position:relative}.brand img{width:72px}.nav-cta{padding:11px 13px}
+  .mobile-menu-panel{
+    display:flex;flex-direction:column;gap:2px;
+    position:absolute;top:calc(100% + 1px);left:0;right:0;
+    padding:10px 12px 14px;background:rgba(255,255,255,.98);
+    border:1px solid var(--line);border-top:0;border-radius:0 0 16px 16px;
+    box-shadow:0 18px 35px rgba(11,20,61,.12);
+    opacity:0;visibility:hidden;transform:translateY(-8px);
+    pointer-events:none;transition:opacity .2s ease,transform .2s ease,visibility .2s ease;
+  }
+  .mobile-menu-panel.open{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto}
+  .mobile-menu-panel a{padding:13px 12px;border-radius:10px;color:var(--navy);font-size:13px;font-weight:800}
+  .mobile-menu-panel a:hover,.mobile-menu-panel a:focus{background:#f1f4ff;color:var(--blue2)}
+  .mobile-menu-panel .mobile-menu-cta{margin-top:5px;text-align:center;background:var(--blue);color:#fff}
+  .mobile-menu-panel .mobile-menu-cta:hover,.mobile-menu-panel .mobile-menu-cta:focus{background:var(--blue2);color:#fff}
   .hero{padding:48px 0 34px}
   .hero-grid{grid-template-columns:1fr}
   h1{font-size:clamp(39px,11vw,58px)}
@@ -227,7 +245,17 @@ footer{background:#080e27;color:#aab4ce;padding:30px 0}
       <a href="#layanan">Layanan</a><a href="#portfolio">Portfolio</a><a href="#harga">Harga</a><a href="#proses">Proses</a><a href="#faq">FAQ</a>
     </nav>
     <a class="nav-cta" href="https://wa.me/6285257743411?text=Halo%20Taraweb%2C%20saya%20ingin%20konsultasi%20website%20gratis">Konsultasi Gratis</a>
-    <button class="menu" type="button" aria-label="Menu">☰</button>
+    <button class="menu" id="menuToggle" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="mobileMenu">
+      <span class="menu-icon">☰</span>
+    </button>
+    <div class="mobile-menu-panel" id="mobileMenu" aria-hidden="true">
+      <a href="#layanan">Layanan</a>
+      <a href="#portfolio">Portfolio</a>
+      <a href="#harga">Harga</a>
+      <a href="#proses">Proses</a>
+      <a href="#faq">FAQ</a>
+      <a class="mobile-menu-cta" href="https://wa.me/6285257743411?text=Halo%20Taraweb%2C%20saya%20ingin%20konsultasi%20website%20gratis">Konsultasi Gratis →</a>
+    </div>
   </div>
 </header>
 
@@ -402,5 +430,55 @@ footer{background:#080e27;color:#aab4ce;padding:30px 0}
 
 <a class="wa-float desktop-only" href="https://wa.me/6285257743411?text=Halo%20Taraweb%2C%20saya%20ingin%20konsultasi%20website" aria-label="Chat WhatsApp Taraweb"><span class="wa-icon">◔</span> Chat WhatsApp</a>
 <a class="wa-float mobile-only" href="https://wa.me/6285257743411?text=Halo%20Taraweb%2C%20saya%20ingin%20konsultasi%20website" aria-label="Chat WhatsApp Taraweb"><span class="wa-icon">◔</span></a>
+
+<script>
+(function () {
+  const toggle = document.getElementById('menuToggle');
+  const panel = document.getElementById('mobileMenu');
+
+  if (!toggle || !panel) return;
+
+  function closeMenu() {
+    panel.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-label', 'Buka menu');
+    toggle.querySelector('.menu-icon').textContent = '☰';
+  }
+
+  function openMenu() {
+    panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
+    toggle.setAttribute('aria-expanded', 'true');
+    toggle.setAttribute('aria-label', 'Tutup menu');
+    toggle.querySelector('.menu-icon').textContent = '✕';
+  }
+
+  toggle.addEventListener('click', function (event) {
+    event.stopPropagation();
+    const isOpen = panel.classList.contains('open');
+    isOpen ? closeMenu() : openMenu();
+  });
+
+  panel.querySelectorAll('a').forEach(function (link) {
+    link.addEventListener('click', closeMenu);
+  });
+
+  document.addEventListener('click', function (event) {
+    if (!panel.contains(event.target) && !toggle.contains(event.target)) {
+      closeMenu();
+    }
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') closeMenu();
+  });
+
+  window.addEventListener('resize', function () {
+    if (window.innerWidth > 800) closeMenu();
+  });
+})();
+</script>
+
 </body>
 </html>
